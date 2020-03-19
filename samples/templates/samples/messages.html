@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+
+    {% load static %}
+    <script src="{% static 'samples/encryption/rsa.js' %}"></script>
+    <script src="{% static 'samples/encryption/sjcl.js' %}"></script>
+    <script src="{% static 'samples/messages.js' %}"></script>
+</head>
+<body>
+    <h1>Sample description</h1>
+    <p>This sample aims to test async messaging between the server and the user</p>
+    <h1>Application</h1>
+    <h2>Send</h2>
+    <input type="text" name="" id="text">
+    <input type="button" value="Send" onclick="send()">
+    <h2>Receive</h2>
+    <ul id="received_data"></ul>
+</body>
+</html>
