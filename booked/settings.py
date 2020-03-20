@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'channels',
     'data',
+    'dashboard',
     'logger',
     'samples',
     'django.contrib.admin',

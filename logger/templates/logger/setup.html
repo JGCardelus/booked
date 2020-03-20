@@ -7,5 +7,17 @@
 </head>
 <body>
     <h1>Welcome to the setup page</h1>
+    <input type="text" id="username" placeholder="Enter username">
+    <input type="text" id="name" placeholder="Enter you full name">
+    <input type="text" id="email" plahcolder="Enter you email">
+    <input type="password" id="password">
+    <input type="password" id="password_repeat">
+    <input type="checkbox" id="is_teacher">
+    <input type="button" value="Set me up!" id="setup">
 </body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    {% load static %}
+    <script src="{% static 'libs/sjcl.js' %}"></script>
+    <script src="{% static 'framework.js' %}"></script>
+    <script src="{% static 'logger/setup.js' %}"></script>
 </html>
