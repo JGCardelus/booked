@@ -55,3 +55,91 @@ class Data_Checker:
             return True
         else:
             return False
+
+class Parser:
+    def parse_date(self, raw_date):
+        date = self.parse_datetime(raw_date, '-')
+        return date
+
+    def parse_time(self, raw_time):
+        time = self.parse_datetime(raw_time, ':')
+        return time
+
+    def parse_datetime(self, raw_elem, separator):
+        raw_elem_chunks = raw_elem.split(separator)
+        elem = []
+        for raw_date_chunk in raw_elem_chunks:
+            if raw_date_chunk == '%':
+                elem.append(None)
+            else:
+                elem.append(int(raw_date_chunk))
+
+        return elem
+
+    def parse_datetime_object(self, datetime_obj):
+        datetime_obj_primary_chunks = datetime_obj.split('+')
+        datetime_obj_chunks = datetime_obj_primary_chunks[0].split(' ')
+
+        date = self.parse_date(datetime_obj_chunks[0])
+        time = self.parse_time(datetime_obj_chunks[1])
+
+        return date, time
+
+    def parse_meetings(self, meetings):
+        meetings_json = {}
+        for meeting in meetings:
+            meeting_json = self.parse_meeting(meeting)
+            meetings_json[meeting.meeting_id] = meeting_json
+
+        return meetings_json
+
+    def parse_meeting(self, meeting):
+        meeting_json = {
+            "group_id": meeting.group.group_id,
+            "group_name": meeting.group.name,
+            "time": str(meeting.time),
+            "duration": str(meeting.duration),
+            "repeat": meeting.repeat,
+            "description": meeting.description,
+            "links": meeting.links
+        }
+
+        return meeting_json
+
+    def parse_tasks(self, tasks):
+        tasks_json = {}
+        for task in tasks:
+            task_json = self.parse_task(task)
+            tasks_json[task.task_id] = task_json
+
+        return tasks_json
+
+    def parse_task(self, task):
+        task_json = {
+            "group_id": task.group.group_id,
+            "group_name": task.group.name,
+            "name": task.name,
+            "due_date": str(task.due_date),
+            "notes": task.notes
+        }
+
+        return task_json
+
+class DateTime_Filter:
+    def apply_filter(self, date_a, time_a, date_b, time_b):
+        is_valid = True
+
+        for i in range(3):
+            if date_a[i] != None and date_b[i] != None:
+                if date_a[i] != date_b[i]:
+                    is_valid = False
+
+        for i in range(2):
+            if time_a[i] != None and time_b[i] != None:
+                if time_a[i] != time_b[i]:
+                    is_valid = False
+
+        return is_valid
+
+dt_filter = DateTime_Filter()
+parser = Parser()

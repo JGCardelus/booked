@@ -3,10 +3,11 @@ from django.db import models
 import datetime
 import random
 
-from base64 import b64encode
 from django.utils import timezone
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
+
+from booked.framework import parser, dt_filter
 
 class User(models.Model):
     user_id = models.CharField(max_length=8, primary_key=True, unique=True)
@@ -18,26 +19,49 @@ class User(models.Model):
 
     def verify(in_username, in_password):
         user = None
+
         try:
-            # Also email
             user = User.objects.get(username=in_username)
         except User.DoesNotExist:
+            user = None
+
+        if user == None:
+            try:
+                user = User.objects.get(email=in_username)
+            except User.DoesNotExist:
+                user = None
+
+        if user == None:
             return False, None
+        
+        password = user.password
+        if password == in_password:
+            return True, user
         else:
-            password = user.password
-            if password == in_password:
-                return True, user
-            else:
-                return False, None
+            return False, None
 
     def new_user_checks(information):
         username = information["username"]
+        email = information["email"]
+
+        # Email and username must be unique
+        is_repeated = True
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return True
-        else:
+            is_repeated = False
+
+        if not is_repeated:
+            is_repeated = True
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                is_repeated = False
+
+        if is_repeated:
             return False
+        else:
+            return True
 
     def new(information):
         verified_info = User.new_user_checks(information)
@@ -88,17 +112,80 @@ class User(models.Model):
 
 class Group(models.Model):
     group_id = models.CharField(max_length=8, primary_key=True, unique=True)
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
-    description = models.CharField(max_length=1024)
+    description = models.CharField(max_length=1024, blank=True)
+
+    def get_groups(user):
+        try:
+            groups = Group.objects.all().filter(user=user)
+            return groups
+        except Group.DoesNotExist:
+            return None
 
 class Meeting(models.Model):
     meeting_id = models.CharField(max_length=12, primary_key=True, unique=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     time = models.DateTimeField()
-    repeat = models.CharField(max_length=512)
-    description = models.CharField(max_length=1024)
-    links = models.CharField(max_length=2048)
+    duration = models.TimeField(default='01:00')
+    repeat = models.CharField(max_length=512, blank=True)
+    description = models.CharField(max_length=1024, blank=True)
+    links = models.CharField(max_length=2048, blank=True)
+
+    def get_meetings(group, date, time):
+        meetings = []
+        try:
+            meetings = Meeting.objects.all().filter(group=group)
+        except:
+            return []
+        
+        meetings = Meeting.apply_datetime_filters(meetings, date, time)
+        return meetings
+
+    def apply_datetime_filters(init_meetings, date, time):
+        meetings = []
+        for meeting in init_meetings:
+            m_date, m_time = parser.parse_datetime_object(str(meeting.time))
+            is_valid = dt_filter.apply_filter(date, time, m_date, m_time)
+            
+            if is_valid:
+                meetings.append(meeting)
+
+        return meetings
+
+class Task(models.Model):
+    task_id = models.CharField(max_length=12, primary_key=True, unique=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    name = models.CharField(max_length=512)
+    due_date = models.DateTimeField()
+    notes = models.CharField(max_length=2048)
+
+    def get_tasks(group, date, time, name):
+        tasks = []
+        try:
+            tasks = Task.objects.all().filter(group=group)
+        except:
+            return []
+
+        if name != None:
+            try:
+                tasks = Task.objects.all().filter(name=name)
+            except:
+                return []
+        
+        tasks = Task.apply_datetime_filters(tasks, date, time)
+        return tasks
+
+    def apply_datetime_filters(init_tasks, date, time):
+        tasks = []
+        for task in init_tasks:
+            m_date, m_time = parser.parse_datetime_object(str(task.due_date))
+            is_valid = dt_filter.apply_filter(date, time, m_date, m_time)
+            
+            if is_valid:
+                tasks.append(task)
+
+        return tasks
 
 class Session(models.Model):
     session_key = models.CharField(max_length=256)
@@ -128,5 +215,13 @@ class Session(models.Model):
             return False, None
         else:
             return True, session
+
+    def get_session(session_key):
+        try:
+            session = Session.objects.get(session_key=session_key)
+        except Session.DoesNotExist:
+            return None
+        else:
+            return session
 
 
