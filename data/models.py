@@ -15,7 +15,7 @@ class User(models.Model):
     name = models.CharField(max_length=512)
     email = models.CharField(max_length=512)
     password = models.CharField(max_length=512)
-    is_teacher = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
 
     def verify(in_username, in_password):
         user = None
@@ -74,9 +74,9 @@ class User(models.Model):
         password = information["password"]
 
         # Teacher parsing
-        is_teacher = False
-        if information["is_teacher"] == 'True':
-            is_teacher = True
+        is_admin = False
+        if information["is_admin"] == 'True':
+            is_admin = True
 
         user_id = User.generate_userid(username, name)
 
@@ -84,13 +84,13 @@ class User(models.Model):
         try:
             new_user = User(user_id=user_id, username=username, 
                         name=name, email=email, password=password, 
-                        is_teacher=is_teacher)
+                        is_admin=is_admin)
             new_user.save()
         except:
             return False, None
         
 
-        session = Session.generate_session_key(new_user)
+        session = Session.generate_session(new_user)
         return True, session
 
     def generate_userid(username, name):
@@ -116,9 +116,13 @@ class Group(models.Model):
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=1024, blank=True)
 
+class JoinedGroup(models.Model):
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
     def get_groups(user):
         try:
-            groups = Group.objects.all().filter(user=user)
+            groups = JoinedGroup.objects.all().filter(user=user)
             return groups
         except Group.DoesNotExist:
             return None
@@ -128,30 +132,49 @@ class Meeting(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     time = models.DateTimeField()
     duration = models.TimeField(default='01:00')
-    repeat = models.CharField(max_length=512, blank=True)
     description = models.CharField(max_length=1024, blank=True)
     links = models.CharField(max_length=2048, blank=True)
 
-    def get_meetings(group, date, time):
+    def filter_by_group(group):
         meetings = []
         try:
             meetings = Meeting.objects.all().filter(group=group)
         except:
             return []
-        
+        return meetings
+
+    def get_by_datetime(group, date, time):
+        meetings = Meeting.filter_by_group(group)
         meetings = Meeting.apply_datetime_filters(meetings, date, time)
         return meetings
 
     def apply_datetime_filters(init_meetings, date, time):
         meetings = []
         for meeting in init_meetings:
-            m_date, m_time = parser.parse_datetime_object(str(meeting.time))
-            is_valid = dt_filter.apply_filter(date, time, m_date, m_time)
+            eval_date, eval_time = parser.parse_datetime_object(str(meeting.time))
+            is_valid = dt_filter.apply(date, time, eval_date, eval_time)
             
             if is_valid:
                 meetings.append(meeting)
 
         return meetings
+
+    def get_by_range(group, date_a, time_a, date_b, time_b):
+        meetings = Meeting.filter_by_group(group)
+        meetings = Meeting.apply_range_filters(meetings, date_a, time_a, date_b, time_b)
+        return meetings
+
+    def apply_range_filters(init_meetings, date_a, time_a, date_b, time_b):
+        meetings = []
+        for meeting in init_meetings:
+            eval_date, eval_time = parser.parse_datetime_object(str(meeting.time))
+            is_valid = dt_filter.apply_range(date_a, time_a, date_b, time_b, eval_date, eval_time)
+
+            if is_valid:
+                meetings.append(meeting)
+
+        return meetings
+
 
 class Task(models.Model):
     task_id = models.CharField(max_length=12, primary_key=True, unique=True)
@@ -160,7 +183,7 @@ class Task(models.Model):
     due_date = models.DateTimeField()
     notes = models.CharField(max_length=2048)
 
-    def get_tasks(group, date, time, name):
+    def filter_by_group_name(group, name):
         tasks = []
         try:
             tasks = Task.objects.all().filter(group=group)
@@ -172,27 +195,48 @@ class Task(models.Model):
                 tasks = Task.objects.all().filter(name=name)
             except:
                 return []
-        
+
+        return tasks
+
+    def get_by_datetime(group, name, date, time):
+        tasks = Task.filter_by_group_name(group, name)
         tasks = Task.apply_datetime_filters(tasks, date, time)
         return tasks
 
     def apply_datetime_filters(init_tasks, date, time):
         tasks = []
         for task in init_tasks:
-            m_date, m_time = parser.parse_datetime_object(str(task.due_date))
-            is_valid = dt_filter.apply_filter(date, time, m_date, m_time)
+            eval_date, eval_time = parser.parse_datetime_object(str(task.due_date))
+            is_valid = dt_filter.apply(date, time, eval_date, eval_time)
             
             if is_valid:
                 tasks.append(task)
 
         return tasks
 
+    def get_by_range(group, name, date_a, time_a, date_b, time_b):
+        tasks = Task.filter_by_group_name(group, name)
+        tasks = Task.apply_range_filters(tasks, date_a, time_a, date_b, time_b)
+        return tasks
+
+    def apply_range_filters(init_tasks, date_a, time_a, date_b, time_b):
+        tasks = []
+        for task in init_tasks:
+            eval_date, eval_time = parser.parse_datetime_object(str(task.due_date))
+            is_valid = dt_filter.apply_range(date_a, time_a, date_b, time_b, eval_date, eval_time)
+            if is_valid:
+                tasks.append(task)
+
+        return tasks
+
+        
+
 class Session(models.Model):
     session_key = models.CharField(max_length=256)
     expire_date = models.DateTimeField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    def generate_session_key(user):
+    def generate_session(user):
         date = timezone.now()
         user_id = user.user_id
 

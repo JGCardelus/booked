@@ -1,3 +1,5 @@
+import datetime
+
 class Data_Checker_Error(Exception):
     def __init___(self, error_message):
         Exception.__init__(self, "Data_Checker_Error: The data was incorrect. Error message: " % error_message)
@@ -13,8 +15,8 @@ class Data_Checker:
         if is_empty:
             raise Data_Checker_Error("Data is None or empty")
 
-        has_keys = self.has_keys()
-        if not has_keys:
+        has_expected_keys = self.has_expected_keys()
+        if not has_expected_keys:
             raise Data_Checker_Error("Data does not contain the specified keys")
 
         if not can_be_empty:
@@ -39,7 +41,7 @@ class Data_Checker:
 
         return False
 
-    def has_keys(self):
+    def has_expected_keys(self):
         has_keys = True
         for key in self.keys:
             if key not in self.data.keys():
@@ -99,7 +101,6 @@ class Parser:
             "group_name": meeting.group.name,
             "time": str(meeting.time),
             "duration": str(meeting.duration),
-            "repeat": meeting.repeat,
             "description": meeting.description,
             "links": meeting.links
         }
@@ -126,20 +127,48 @@ class Parser:
         return task_json
 
 class DateTime_Filter:
-    def apply_filter(self, date_a, time_a, date_b, time_b):
+    def apply(self, date_a, time_a, eval_date, eval_time):
         is_valid = True
 
         for i in range(3):
-            if date_a[i] != None and date_b[i] != None:
-                if date_a[i] != date_b[i]:
+            if date_a[i] != None:
+                if date_a[i] != eval_date[i]:
                     is_valid = False
 
         for i in range(2):
-            if time_a[i] != None and time_b[i] != None:
-                if time_a[i] != time_b[i]:
+            if time_a[i] != None:
+                if time_a[i] != eval_time[i]:
                     is_valid = False
 
         return is_valid
 
+    def apply_range(self, date_a, time_a, date_b, time_b, eval_date, eval_time):
+        is_valid = True
+
+        for i in range(3):
+            if date_a[i] != None:
+                if eval_date[i] < date_a[i]:
+                    is_valid = False
+
+            if date_b[i] != None:
+                if eval_date[i] > date_b[i]:
+                    is_valid = False
+
+        for i in range(2):
+            if time_a[i] != None:
+                if eval_time[i] < time_a[i]:
+                    is_valid = False
+            if time_b[i] != None:
+                if eval_time[i] > time_b[i]:
+                    is_valid = False
+
+        return is_valid
+
+class ResponseCodes:
+    def __init__(self):
+        self.error = "ERROR"
+        self.correct = "VALID"
+
 dt_filter = DateTime_Filter()
 parser = Parser()
+response_codes = ResponseCodes()

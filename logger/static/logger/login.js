@@ -17,7 +17,7 @@ function login()
         // Build message
         const message = JSON.stringify(
             {
-                "action": "verify",
+                "request": "verify",
                 "username": username,
                 "password": hashed_password
             }
@@ -29,9 +29,8 @@ function login()
 
 function handle_data(data)
 {
-    let result = data.result;
-    result = data["result"];
-    if (result == 'verified')
+    let response = data.response;
+    if (response == 'verified')
     {
         window.location = locations.get_dashboard(data.session_key);
     }

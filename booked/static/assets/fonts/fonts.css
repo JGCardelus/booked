@@ -1,0 +1,66 @@
+@font-face {
+    font-family: 'Lexend';
+    font-style: normal;
+    src: url('./lexend_mega.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Lora';
+    font-style: normal;
+    src: url('./lora.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Lora Italic';
+    font-style: italic;
+    src: url('./lora_italic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    src: url('./roboto_medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Roboto Light';
+    font-style: normal;
+    font-weight: 200;
+    src: url('./roboto_light.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Roboto Thin';
+    font-style: normal;
+    font-weight: 100;
+    src: url('./roboto_thin.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Roboto Medium';
+    font-style: normal;
+    font-weight: 500;
+    src: url('./roboto_medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Roboto Bold';
+    font-style: normal;
+    font-weight: 700;
+    src: url('./roboto_bold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Roboto Black';
+    font-style: normal;
+    font-weight: 700;
+    src: url('./roboto_black.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'micons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(./micons.ttf) format('truetype');
+  }

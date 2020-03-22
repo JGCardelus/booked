@@ -4,8 +4,8 @@ channel.on('data', handle_data);
 
 function handle_data(data)
 {
-    let result = data.result
-    if (result == "verified")
+    let reponse = data.reponse
+    if (reponse == "verified")
     {
         window.location = locations.get_dashboard(data.session_key);
     }
@@ -27,10 +27,10 @@ function setup()
     const password = $('#password').val();
     const password_repeat = $('#password_repeat').val();
 
-    let is_teacher = 'False';
-    if ($('#is_teacher').is(':checked')) 
+    let is_admin = 'False';
+    if ($('#is_admin').is(':checked')) 
     {
-        is_teacher = 'True';
+        is_admin = 'True';
     }
     
     if (password != password_repeat)
@@ -41,11 +41,12 @@ function setup()
     
     const hashed_password = crypto.hash(password)
     const message = JSON.stringify({
+        "request": "setup",
         "username": username,
         "name": name,
         "email": email,
         "password": hashed_password,
-        "is_teacher": is_teacher
+        "is_admin": is_admin
     });
 
     channel.send(message);

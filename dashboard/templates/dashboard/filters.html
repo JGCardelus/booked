@@ -9,8 +9,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="{% static '/assets/fonts/fonts.css' %}">
     <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="stylesheet" href="{% static 'dashboard/styles/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/styles/filters.css' %}">
+
 </head>
+    <script>let params = "{{ params }}";</script>
 <body>
     <nav>
         <div id="nav_top">
@@ -32,59 +34,47 @@
                 <p>Nueva tarea</p>
             </div>
             <div id="nav_quick_settings">
-                <div id="new_group" class="nav_side-bar nav_hover">
-                    <span class="micons">contacts</span>
-                </div>
                 <div id="join_group" class="nav_side-bar nav_hover">
                     <span class="micons">add</span>
                 </div>
-                <div id="settings" class="nav_hover">
+                <div id="settings" class="nav_side-bar nav_hover">
                     <span class="micons">settings</span>
+                </div>
+                <div id="nav_home" class="nav_hover">
+                    <span class="micons">home</span>
                 </div>
             </div>
         </div>
     </nav>
     <div id="nav_padding"></div>
 
-    <div id="day_events">
-        <div id="meetings">
-            <div class="day_events_header">
-                <div class="day_events_title">
-                    <h2>Reuniones</h2>
-                </div>
-                <div class="day_events_expander">
-                    <div class="button">
-                        <span class="micons">add</span>
-                    </div>
-                </div>
+    <div id="filters_page">
+        <div id="title">
+            <h1>Reuniones</h1>
+        </div>
+        <div id="filters">
+            <div class="text">
+                <input type="text" name="input_date" id="">
+                <input type="text" name="input_time" id="">
             </div>
-            <div class="day_events_body">
-                
+            <div class="buttons">
+                <div class="button">
+                    <p>Grupos</p>
+                </div>
+                <div class="button">
+                    <p>Buscar</p>
+                </div>
             </div>
         </div>
-        <div id="tasks">
-            <div class="day_events_header">
-                <div class="day_events_title">
-                    <h2>Tareas</h2>
-                </div>
-                <div class="day_events_expander">
-                    <div class="button">
-                        <span class="micons">add</span>
-                    </div>
-                </div>
-            </div>
-            <div class="day_events_body">
-                
-            </div>
+        <div id="results">
+            
         </div>
     </div>
 </body>
-
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     {% load static %}
     <script src="{% static 'libs/sjcl.js' %}"></script>
     <script src="{% static 'framework.js' %}"></script>
     <script src="{% static 'dashboard/scripts/event_dispatcher.js' %}"></script>
-    <script src="{% static 'dashboard/scripts/dashboard.js' %}"></script>
-    <script src="{% static 'dashboard/scripts/admin_dash.js' %}"></script>
+    <script src="{% static 'dashboard/scripts/filters.js' %}"></script>
 </html>
